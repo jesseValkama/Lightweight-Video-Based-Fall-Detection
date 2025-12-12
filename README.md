@@ -1,4 +1,4 @@
-# Light-weight Video Based Fall Detection
+# Lightweight Video-Based Fall Detection
 
 This is my bachelor's final project. 
 Paper is available here (COMING SOON I GUESS)
