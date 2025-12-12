@@ -9,6 +9,13 @@ from typing import List
 def write_video(rgb_clip: np.ndarray, cam: torch.Tensor, out: cv.VideoWriter, logits: torch.Tensor, idx: torch.Tensor, inference_resize: int, dataset_labels: List[str]) -> None:
     """
     Function for writing video data
+    Args:
+        rgb_clip: the clip as a np.array, not normalised
+        cam: the grayscale heatmap from a cam
+        out: the video writer
+        idx: the index for the class to visualise
+        inference_resize: the resolution for the written video
+        dataset_labels: the list of dataset labels
     """
     rgb_clip = rgb_clip / 255
     cam = cam.detach().numpy().astype(np.float32) # opencv breaks with fp16

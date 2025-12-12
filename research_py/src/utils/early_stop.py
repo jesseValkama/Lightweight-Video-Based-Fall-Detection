@@ -7,12 +7,10 @@ class EarlyStop:
 
     def __call__(self, epoch: int, improvement: bool) -> bool:
         """
-        Method to stop training
-
+        Method to stop training at convergence
         Args:
             epoch: the current epoch
             improvement: whether the model improved last validation or not
-
         Returns:
             bool: Whether to stop training
         """

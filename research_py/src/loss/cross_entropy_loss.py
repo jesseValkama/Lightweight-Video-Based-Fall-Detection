@@ -6,7 +6,6 @@ import torch.nn.functional as F
 class CrossEntropyLoss(nn.Module):
     """
     A custom version of the cross entropy loss, to make it compatible with self-adaptive training and TRADES
-
     math (see __init__):
         l = sum log p_ij y_ij
         reduction(cls_weights l) 
@@ -15,7 +14,6 @@ class CrossEntropyLoss(nn.Module):
     def __init__(self, num_classes: int, cls_weights: torch.Tensor | None = None, reduction: str = "mean") -> None:
         """
         Initialises the cross entropy loss
-
         Args:
             num_classes: the number of classes
             cls_weights: weights for balancing dataset imbalances
@@ -30,7 +28,6 @@ class CrossEntropyLoss(nn.Module):
     def forward(self, x: torch.Tensor, labels: torch.Tensor, reduction: bool = True, apply_cls_weights: bool = True, y: torch.Tensor | None = None, label_idxs: None = None, epoch: None = None) -> torch.Tensor:
         """
         Calculates the cross entropy loss
-
         Args:
             x: the input logits
             labels: a tensor of logits (shape n)
@@ -39,7 +36,6 @@ class CrossEntropyLoss(nn.Module):
             y: pass custom targets if you do not want to use hard labels (labels one hot encoded) 
             label_idxs: **NOT USED**, an easy way to make compatible with self-adaptive training
             epoch: **NOT USED**, an easy way to make compatible with self-adaptive training
-
         Returns:
             torch.Tensor: the loss
         """

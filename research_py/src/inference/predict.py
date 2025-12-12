@@ -10,7 +10,7 @@ from typing import List, Tuple
 
 
 def predict_GradCAM(model: EfficientLRCN, clip: torch.Tensor, rgb_clip: np.ndarray, acts: List, grads: List, out: cv.VideoWriter, 
-            dataset_labels: List[str], inference_resize: int) -> None:
+            dataset_labels: List[str], inference_resize: int, target: int | None = None) -> None:
     """
     GradCAM modified to work with vidoe data
     Acknowledgements:
@@ -24,10 +24,11 @@ def predict_GradCAM(model: EfficientLRCN, clip: torch.Tensor, rgb_clip: np.ndarr
         out: the video writer
         dataset_labels: list of labels as str
         inference_resize: the output size for the written vid
+        taget: the class to visualise or None to visualise predictions
     """
     with autocast(device_type="cuda"):
         logits = model(clip)
-    logit, idx = torch.max(logits, dim=1)
+    logit, idx = torch.max(logits, dim=1) if target is None else logits[:, target], target
     logit.backward()
     alpha = torch.mean(grads[0], dim=(2,3))
     alpha = alpha[:, :, None, None]
@@ -39,7 +40,7 @@ def predict_GradCAM(model: EfficientLRCN, clip: torch.Tensor, rgb_clip: np.ndarr
 
 @torch.no_grad
 def predict_ScoreCAM(model: EfficientLRCN, clip: torch.Tensor, rgb_clip: np.ndarray, acts: List, out: cv.VideoWriter, 
-            dataset_labels: List[str], inference_resize: int, BATCH_SIZE: int = 30, dev: str = "cuda:0") -> None:
+            dataset_labels: List[str], inference_resize: int, target: int | None = None, BATCH_SIZE: int = 30, dev: str = "cuda:0") -> None:
     """
     ScoreCAM modified to work with video data (could be bugged as the activations are spiral shaped)
     Acknowledgements
@@ -54,6 +55,7 @@ def predict_ScoreCAM(model: EfficientLRCN, clip: torch.Tensor, rgb_clip: np.ndar
         out: the video writer
         dataset_labels: list of labels as str
         inference_resize: the output size for the written vid
+        taget: the class to visualise or None to visualise predictions
         batch_size: batch_size for batching the channels for scorecam
         dev: inference device 
     """
@@ -61,7 +63,7 @@ def predict_ScoreCAM(model: EfficientLRCN, clip: torch.Tensor, rgb_clip: np.ndar
         logits = model(clip)
     A_k = acts[0]
     acts.clear()
-    _, idx = torch.max(logits, dim=1)
+    idx = torch.max(logits, dim=1)[1] if target is None else target
 
     M = F.interpolate(A_k, size=rgb_clip.shape[-3:-1], mode="bilinear")
     M = s(M, dims=(2,3)) # NCHW

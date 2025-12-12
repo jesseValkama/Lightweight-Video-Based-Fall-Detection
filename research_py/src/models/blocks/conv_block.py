@@ -12,7 +12,6 @@ class ConvBlock(nn.Module):
             Conv2d
             BatchNorm2d
             ActFN: None or a pytorch actfn
-
         Args:
             channels_in: the n of in channels
             channels_out: the n of filters
@@ -29,6 +28,13 @@ class ConvBlock(nn.Module):
         self.activation_function = activation_function
 
     def forward(self, x) -> torch.Tensor:
+        """
+        performs the forward pass of the convolutional block
+        Args:
+            x: the input in NLCHW or NCHW
+        returns:
+            Tensor: the activations
+        """
         x = self.conv(x)
         x = self.batch_norm(x)
         if self.activation_function:

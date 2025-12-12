@@ -3,6 +3,9 @@ from torch import nn
 
 
 class FullyConnected(nn.Module):
+    """
+    NOT USED
+    """
     def __init__(self, in_channels, out_channels, bias, activation_function = None) -> None:
         super(FullyConnected, self).__init__()
         self.fc = nn.Linear(in_channels, out_channels, bias)

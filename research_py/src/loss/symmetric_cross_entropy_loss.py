@@ -7,7 +7,6 @@ class SymmetricCrossEntropyLoss(nn.Module):
     """
     Acknowledgements:
         https://arxiv.org/pdf/1908.06112
-
     math:
         ce: log p_ij y_ij
         rce: log y_ij p_ij
@@ -17,7 +16,6 @@ class SymmetricCrossEntropyLoss(nn.Module):
     def __init__(self, alpha: float, beta: float, num_classes: int, cls_weights: torch.Tensor | None = None, reduction: str = "mean") -> None:
         """
         Initialises the symmetric cross entropy loss
-
         Args:
             alpha: multiplier for ce
             beta: multiplier for rce
@@ -36,7 +34,6 @@ class SymmetricCrossEntropyLoss(nn.Module):
     def forward(self, x: torch.Tensor, labels: torch.Tensor, reduction: bool = True, apply_cls_weights: bool = True, y: torch.Tensor | None = None, label_idxs: None = None, epoch: None = None) -> torch.Tensor:
         """
         Calculates the symmetric cross entropy loss
-
         Args:
             x: the input logits
             labels: a tensor of logits (shape n)
@@ -45,7 +42,6 @@ class SymmetricCrossEntropyLoss(nn.Module):
             y: pass custom targets if you do not want to use hard labels (labels one hot encoded) 
             label_idxs: **NOT USED**, an easy way to make compatible with self-adaptive training
             epoch: **NOT USED**, an easy way to make compatible with self-adaptive training
-
         Returns:
             torch.Tensor: the loss
         """

@@ -14,11 +14,11 @@ def get_omnifall_datasets(ds_info: Dict, settings: Settings) -> Tuple[torch.util
     """
     Function for settings up Omnifall datasets
     Setup transforms in this function
-
     Args:
-
+        ds_info: dataset info loaded with load_omnifall_info
+        settings: Settings object
     Returns:
-
+        Tuple of datasets: (train, val, test)
     """
     pre_transforms = A.ReplayCompose([
         A.Resize(width=settings.image_size, height=settings.image_size)
@@ -28,15 +28,15 @@ def get_omnifall_datasets(ds_info: Dict, settings: Settings) -> Tuple[torch.util
         A.ISONoise(p=0.3),
         A.RandomGamma(p=0.3)
     ])
+    # aug_transforms2 were used in early experiments, not a part of ablation studies
     aug_transforms2 = A.ReplayCompose([
         A.HorizontalFlip(),
         A.VerticalFlip(p=0.3),
         A.Transpose(p=0.3),
         A.ISONoise(p=0.3),
         A.RandomGamma(p=0.3),
-        A.MotionBlur(p=0.2) # todo: reduce the effect
+        A.MotionBlur(p=0.2)
     ])
-
     post_transforms = v2.Compose([
         v2.Normalize(mean=settings.mean, std=settings.standard_deviation, inplace=True)  
     ])
@@ -53,6 +53,13 @@ class Omnifall(torch.utils.data.Dataset):
     
     def __init__(self, ds_info: dict, settings: Settings, pre_transforms: A.ReplayCompose, post_transforms: v2.Compose, aug_transforms: A.ReplayCompose | None = None) -> None:
         """
+        Initialises the dataset object
+        Args:
+            ds_info: ds_info from load_omnifall_info for the corresponding set: train, val, or test
+            settings: Settings object
+            pre_transforms: **NOT USED**
+            post_transforms: v2.Compose for normalising the tensor
+            aug_transforms: Albumentation ReplayCompose for data augmentations or none to skip
         """
         assert isinstance(pre_transforms, A.ReplayCompose) and isinstance(aug_transforms, (A.ReplayCompose, type(None))) and isinstance(post_transforms, v2.Compose)
         self._video_paths = ds_info["paths"]
@@ -68,11 +75,21 @@ class Omnifall(torch.utils.data.Dataset):
 
     def __len__(self) -> int:
         """
+        returns the number of samples
+        Returns:
+          int: the number of samples
         """
         return len(self._video_labels)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         """
+        gets the datasamples from index idx
+        sample is normalised according to post transforms
+        potentially augmentations if enabled
+        Args:
+            idx: the index
+        Returns:
+            Tuple: a pair of a sample and label
         """
         ext = self._get_ext(idx)
         video_path = Path(os.path.join(self._settings.disk(self._video_datasets[idx]), self._settings.dataset_path, self._video_datasets[idx], self._video_paths[idx] + ext))
@@ -93,11 +110,11 @@ class Omnifall(torch.utils.data.Dataset):
         """
         Method for applying pre and aug transforms since Albumentations don't work
         naively with videos
-
         Args:
-
+            clip: the clip as an array
+            transforms: the augmentations as albumentations
         Returns:
-
+            np.array: the augmented clip 
         """
         n = len(clip)
         t = transforms(image=clip[0])
@@ -110,11 +127,10 @@ class Omnifall(torch.utils.data.Dataset):
     def _get_ext(self, idx: int) -> str:
         """
         Method for getting the ext for a video clip
-
         Args:
-
+            idx: the index of the sample
         Returns:
-
+            str: the extention, since the filename does not contain it
         """
         dataset = self._video_datasets[idx]
         match dataset:
@@ -134,11 +150,14 @@ class Omnifall(torch.utils.data.Dataset):
         Function for loading videos, since the default torch codec doesn't work
         due to le2i videos having different fps, sizes, and omnifall dataset
         annotation lengths being different lengths -> this custom approach
-
         Args:
-
+            video_path: the path to the video and filename
+            time_steps: the start and endpoint for the clip
+            dataset: the name of the dataset
+            corruption_threshold: the threshold to not accept a clip (assertion error), the clip needs to be manually
+                added to settings if you want to remove it
         Returns:
-
+            np.ndarray: the loaded clip
         """
         assert time_steps[1] > time_steps[0]
         with av.open(video_path) as container:

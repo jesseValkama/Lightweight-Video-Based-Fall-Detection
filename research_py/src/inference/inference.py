@@ -13,10 +13,9 @@ from torchvision.transforms import v2
 
 def run_inference(settings: Settings, cam_name: str = "ScoreCAM", capture_interval: int = 10) -> None:
     """
+    The function for running inference
     acknowledgements:
         https://docs.opencv.org/4.x/dd/d43/tutorial_py_video_display.html (video reading and writing)
-    The function for running "inference" as in pre-recorded videos, pytorch DataLoader is not used
-    since normally it should be implented for live video
     Args:
         settings: the settings for inference
         cam_name: the XAI mode to use either GradCAM or ScoreCAM
@@ -46,8 +45,10 @@ def run_inference(settings: Settings, cam_name: str = "ScoreCAM", capture_interv
 
     for video_path in video_paths:
         cap = cv.VideoCapture(os.path.join(settings.inference_path, video_path))
-        fourcc = cv.VideoWriter_fourcc(*'XVID') # todo: fix the path is not .original.avi e.g., .mp4.avi
-        out = cv.VideoWriter(os.path.join(save_dir, "saved_" + video_path + "_" + cam_name + ".avi"), fourcc, 
+        fourcc = cv.VideoWriter_fourcc(*'XVID')
+        name, _ = os.path.splitext(video_path) # add the class name
+        class_name = "predict" if settings.inference_target is None else settings.dataset_labels[settings.inference_target]
+        out = cv.VideoWriter(os.path.join(save_dir, "saved_" + name + "_" + cam_name + "_" + class_name + ".avi"), fourcc, 
                              float(cap.get(cv.CAP_PROP_FPS)/capture_interval), (settings.inference_save_res,  settings.inference_save_res))
         if not cap.isOpened():
             print("Cannot open camera")
@@ -74,11 +75,12 @@ def run_inference(settings: Settings, cam_name: str = "ScoreCAM", capture_interv
             match cam_name:
                 case "GradCAM":
                     predict_GradCAM(model, tensor_clip, numpy_clip, acts, grads, 
-                                    out, settings.dataset_labels, settings.inference_save_res)
+                                    out, settings.dataset_labels, settings.inference_save_res, 
+                                    target=settings.inference_target)
                 case "ScoreCAM":
                     predict_ScoreCAM(model, tensor_clip, numpy_clip, acts, 
                                         out, settings.dataset_labels, settings.inference_save_res, 
-                                        dev=settings.train_dev)
+                                        dev=settings.train_dev, target=settings.inference_target)
             clip.clear()
         cap.release()
         out.release()

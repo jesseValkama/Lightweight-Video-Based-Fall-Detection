@@ -9,10 +9,17 @@ from typing import List
 
 class MetricsContainer:
     """
+    Automates the metrics calculation for omnifall
+        uses PlotContainer for tensorboard
     """
 
     def __init__(self, dataset_labels: List[str], plot_container: PlotContainer, activation_function = nn.Softmax) -> None:
         """
+        initialises the object
+        Args:
+            dataset_labels: list of dataset_labels
+            plot_container: wrapper for SummaryWriter
+            activation_function: softmax (probably)
         """
         self._plot_container = plot_container
         self._dataset_labels = dataset_labels
@@ -34,6 +41,11 @@ class MetricsContainer:
         
     def calc_iter(self, logits: torch.Tensor, labels: torch.Tensor, cls_weights: np.ndarray[float] | None = None) -> None:
         """
+        used in the testing loop to construct the confusion matrix
+        Args:
+            logits: the output of the model before softmax
+            labels: the corresponding labels for the outputs
+            cls_weights: the cls_weights used for training (if used), removes the unwanted classes from metrics 
         """
         candidates = self._activation_function(logits)
         candidates, labels = candidates.detach().cpu().numpy(), labels.detach().cpu().numpy()
@@ -55,6 +67,9 @@ class MetricsContainer:
 
     def calc_metrics(self, cls_weights: np.ndarray[float] | None) -> None:
         """
+        Calculates the metrics: sensitivity = recall, specificity = precision
+        Args:
+            cls_weights: the cls_weights used for training if used, otherwise None
         """
         if cls_weights is None:
             cls_weights = np.ones(len(self._dataset_labels), dtype=np.float32)
@@ -81,6 +96,12 @@ class MetricsContainer:
 
     def _metrics_helper(self, cls_weights: np.ndarray[float] | None, idx: int) -> float:
         """
+        Helper method for the calc_metrics
+        Args:
+            cls_weights: you already know
+            idx: for the class
+        Returns:
+            float: if the class is used, otherwise None
         """
         if cls_weights is None:
             return 0.0
@@ -88,12 +109,19 @@ class MetricsContainer:
 
     def add_embedding(self, embedding: torch.Tensor, labels: torch.Tensor) -> None:
         """
+        Method to add embeddings for embedding visualisations
+        Args:
+            embedding: the embeddings from the hook
+            labels: the corresponding labels
         """
         self._embeddings = torch.cat((self._embeddings, embedding), dim=0)
         self._labels = torch.cat((self._labels, labels), dim=0)
 
     def tsne(self) -> None:
         """
+        Method to visualise the embeddings in latent space with t-sne with tensorboard
+        t-sne paper:
+            https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf
         """
         assert len(self._embeddings) != 0.0, "add embeddings with add_embedding method"
         tsne = TSNE()
@@ -102,11 +130,13 @@ class MetricsContainer:
         
     def show_conf_mat(self) -> None:
         """
+        Method to visualise the confusion matrix with tensorboard
         """
         self._plot_container.push_conf_mat(self._conf_mat_table, self._dataset_labels)
 
     def print_conf_mat(self) -> None:
         """
+        Method to print the confusion matrix
         """
         assert np.sum(self._conf_mat_table) != 0.0, "Construct the confusion matrix first with calc_iter method"
         assert np.sum(self._conf_mat_table) == np.sum(self._preds_total), \
@@ -118,6 +148,9 @@ class MetricsContainer:
     
     def show_metrics(self, dec: int = 2) -> None:
         """
+        Method to visualise the metrics with tensorboard
+        Args:
+            dec: the number of decimals
         """
         fall = pd.DataFrame(data={"sensitivity": [np.round(self._fall["recall"], dec), np.round(self._fallen["recall"], dec), np.round(self._fall_U_fallen["recall"], dec)], 
                                        "specificity": [np.round(self._fallen["precision"], dec), np.round(self._fallen["precision"], dec), np.round(self._fall_U_fallen["precision"], dec)],
@@ -128,6 +161,7 @@ class MetricsContainer:
 
     def print_metrics(self) -> None:
         """
+        Method to print the metrics
         """
         assert self._10_class is not None, "Calculate the metrics before printing"
         n = len(self._dataset_labels)

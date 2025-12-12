@@ -27,8 +27,6 @@ def run_loop(settings: Settings) -> None:
     main training loop fn (currently no support for ucf101 as it was never finished)
     Args:
         settings: settings for the training
-    Returns:
-
     """
     writer = SummaryWriter()
     plot_container = PlotContainer(writer, settings)

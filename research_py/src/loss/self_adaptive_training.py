@@ -11,8 +11,7 @@ class SelfAdaptiveTraining(nn.Module):
     Acknowledgements:
         https://arxiv.org/abs/2101.08732 (official paper)
         https://github.com/LayneH/self-adaptive-training (official repo)
-
-    math (see __init__) or just the official paper:
+    math (see __init__) or simply the official paper:
     if e_cur > e_s 
         t_i <- alpha * t_i + (1 - alpha) * p_i
         w_i = max_j t_ij

@@ -1,12 +1,12 @@
 # Light-weight Video Based Fall Detection
 
 This is my bachelor's final project. 
-Paper is available here (IN PROGRESS)
+Paper is available here (COMING SOON I GUESS)
 
 ## Description
 
 The project is a study (proposed by school) for fall detection with lightweight models (CNNs + RNNs). The Omnifall benchmark is used for evalution.
-This project contains the training loop, the models, testing and inference. However, model weights are not released. There is support for tensorboard and support for inference is coming soon, possibly even in cpp.
+This project contains the training loop, the models, testing and inference. However, model weights are not released. There is support for tensorboard and support for inference.
 
 Results:
 
@@ -14,16 +14,11 @@ Results:
 
 ### Dependencies
 
-* PACKAGES: (TODO) 
 * CUDA 12.6
-
-### Installing
-
--
 
 ### Executing program
 
-You might need to change some dependencies in the settings.yaml file
+You might need to change some dependencies in the src/settings/settings.py file
 Also all of the training settings should be defined there
 ```
 python main.py args
@@ -39,9 +34,7 @@ args:
 
     inference: 0 | 1
 
-## Help
-
--
+    cam: "ScoreCAM" | "GradCAM"
 
 ## Authors
 

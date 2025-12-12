@@ -8,6 +8,14 @@ import torch
 
 def get_criterion(criterion: str, settings: Settings, labels: np.ndarray, cls_weights: torch.Tensor | None = None) -> CrossEntropyLoss | SymmetricCrossEntropyLoss | SelfAdaptiveTraining:
     """
+    Gets the criterion (could include self-adaptive training if enabled in settings)
+    Args:
+        criterion: the criterion to use
+        settings: the settings object
+        labels: the corresponding labels to all samples
+        cls_weights: custom weights e.g., INS, use None to exclude
+    Returns:
+        the criteterion
     """
     match criterion:
         case "ce":

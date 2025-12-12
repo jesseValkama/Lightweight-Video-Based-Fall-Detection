@@ -12,7 +12,6 @@ class PlotContainer:
     Wrapper for the torch SummaryWriter
     Automatically plots graphs for runtime
     and metrics from the testing
-
     Recommended:
         Run the tensorboard from a separate terminal with:
         tensorboard --logdir=runs
@@ -20,6 +19,9 @@ class PlotContainer:
 
     def __init__(self, writer: SummaryWriter, settings: Settings) -> None:
         """
+        Args:
+            writer: the created summary writer
+            settings: the settings object
         """
         self._writer = writer
         self._settings = settings
@@ -36,6 +38,11 @@ class PlotContainer:
 
     def update_train_plots(self, loss: float, accuracy: float, type: str) -> None:
         """
+        updates the tensorboard live plots
+        Args:
+            loss: the loss from the current epoch
+            accuracy: the loss from the current epoch
+            type: train or val
         """
         if not type in self._train_data:
             raise RuntimeError(f"Incorrect type for updating a plot: {type}")
@@ -47,6 +54,7 @@ class PlotContainer:
                 
     def push_train_plots(self) -> None:
         """
+        pushes the training and validation loss to the same plot to tensorboard
         """
         epoch = len(self._train_data["train"]["loss"])
         assert epoch > 0, "you need to update the plots with update_plot before pushing"
@@ -82,8 +90,12 @@ class PlotContainer:
     
     def push_conf_mat(self, cm: np.ndarray, labels: List[str]) -> None:
         """
+        pushes the confusion matrix to tensorboard
         Acknowledgements:
             https://stackoverflow.com/questions/35572000/how-can-i-plot-a-confusion-matrix
+        Args:
+            cm: the confusion matrix as np.array
+            labels: the dataset labels as a list
         """
         fig = plt.figure()
         df_cm = pd.DataFrame(cm, index=[l for l in labels], columns=[l for l in labels])
@@ -92,6 +104,10 @@ class PlotContainer:
     
     def push_test_metrics(self, ten_class: pd.DataFrame, fall: pd.DataFrame) -> None:
         """
+        pushes the testing metrics to tensorboard
+        Args:
+            ten_class: the metrics for ten class
+            fall: the metrics related to fall and fallen classes
         """
         fig, axs = plt.subplots(2, 1)
         axs[0].axis("off")
@@ -103,8 +119,13 @@ class PlotContainer:
     
     def push_tsne(self, latent_repr: np.ndarray, labels: np.ndarray, dataset_labels: List[str]) -> None:
         """
+        pushes the t-sne visualisation to tensorboard
         Acknowledgements:
             https://builtin.com/data-science/tsne-python
+        Args:
+            latent_repr: the embeddings visualised in the latent space
+            labels: the corresponding labels for the embeddings
+            dataset_labels: the dataset labels as a list
         """
         fig = plt.figure()
         df = pd.DataFrame()

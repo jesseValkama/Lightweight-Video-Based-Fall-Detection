@@ -6,17 +6,25 @@ from torch import nn
 
 
 class EfficientLRCN(nn.Module):
-    def __init__(self, settings: Settings):
-        super(EfficientLRCN, self).__init__()
+    """
+    Model that combines efficientnet and lstm
+    the embedding is directly passed from the so called "manifold of interest" to lstm
+    see the paper
+    """
 
+    def __init__(self, settings: Settings):
+        """
+        Method to initialise the model
+        Args:
+            settings: the settings object
+        """
+        super(EfficientLRCN, self).__init__()
         self.backbone = efficientnet_b0(weights=EfficientNet_B0_Weights.DEFAULT).features
         self.backbone[8] = nn.Identity()
         for p in self.backbone[:settings.frozen_layers].parameters():
             p.requires_grad = False
-
         self.point_wise = ConvBlock(320, settings.lstm_input_size, (1, 1), 1, 0, activation_function=nn.SiLU(inplace=True)) if settings.rnn_point_wise else None
         self.gap = nn.AdaptiveAvgPool2d(output_size=1)
-
         self.rnn = settings.rnn_type(
             input_size = settings._lstm_input_size,
             hidden_size = settings.lstm_hidden_size,
@@ -33,6 +41,13 @@ class EfficientLRCN(nn.Module):
         )
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Performs the forward pass of the model
+        Args:
+            x: the input clip in NLCHW
+        Returns:
+            Tensor: logits
+        """
         bs, seq = x.shape[0], x.shape[1]
         x = self.backbone(x.view(-1, x.shape[2], x.shape[3], x.shape[4]))
         if self.point_wise:
